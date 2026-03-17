@@ -314,15 +314,25 @@ fn extract_as_variable(
     template: &TemplateString<'_>,
 ) -> Result<Option<String>, ParseError> {
     let len = tokens.len();
-    if len < 2 {
+    if len < 1 {
         return Ok(None);
     }
     for (idx, token) in tokens.iter().rev().enumerate() {
         if template.content(token.at) == "as" {
             return match idx {
-                0 => Err(ParseError::MissingVariableAfterAs {
-                    at: token.at.into(),
-                }),
+                0 => {
+                    // Last token is "as". Check if the previous token is also "as",
+                    // making this a valid "as <variable>" binding where variable is "as".
+                    if len >= 2 && template.content(tokens[len - 2].at) == "as" {
+                        let variable = template.content(tokens[len - 1].at).to_string();
+                        tokens.truncate(len - 2);
+                        Ok(Some(variable))
+                    } else {
+                        Err(ParseError::MissingVariableAfterAs {
+                            at: token.at.into(),
+                        })
+                    }
+                }
                 1 => {
                     let variable = template.content(tokens[len - 1].at).to_string();
                     tokens.truncate(len - 2);

@@ -84,6 +84,20 @@ def test_render_url_as_variable_and_binding(assert_render):
     )
 
 
+def test_render_url_as_as_binding(assert_render):
+    template = "{% url 'users:user' as as as %}{{ as }}"
+
+    request = factory.get("/")
+
+    expected = "/users/lily/"
+    assert_render(
+        template=template,
+        context={"as": "lily"},
+        request=request,
+        expected=expected,
+    )
+
+
 def test_render_url_current_app(assert_render):
     template = "{% url 'users:user' 'lily' %}"
 
