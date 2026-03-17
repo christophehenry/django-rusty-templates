@@ -941,7 +941,7 @@ pub enum ParseError {
         #[help]
         help: String,
     },
-    #[error("Cannot mix arguments and keyword arguments")]
+    #[error("Cannot mix positional and keyword arguments")]
     MixedArgsKwargs {
         #[label("here")]
         at: SourceSpan,

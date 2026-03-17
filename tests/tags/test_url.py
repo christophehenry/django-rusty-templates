@@ -119,7 +119,7 @@ def test_parse_url_args_and_kwargs(template_engine):
 
     django_message = snapshot("Don't mix *args and **kwargs in call to reverse()!")
     rusty_message = snapshot("""\
-  × Cannot mix arguments and keyword arguments
+  × Cannot mix positional and keyword arguments
    ╭────
  1 │ {% url 'users:user' 'Alice' username='lily' %}
    · ───────────────────────┬──────────────────────
