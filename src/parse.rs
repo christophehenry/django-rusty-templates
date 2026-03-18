@@ -324,9 +324,8 @@ fn extract_as_variable(
                     // Last token is "as". Check if the previous token is also "as",
                     // making this a valid "as <variable>" binding where variable is "as".
                     if len >= 2 && template.content(tokens[len - 2].at) == "as" {
-                        let variable = template.content(tokens[len - 1].at).to_string();
                         tokens.truncate(len - 2);
-                        Ok(Some(variable))
+                        Ok(Some("as".to_string()))
                     } else {
                         Err(ParseError::MissingVariableAfterAs {
                             at: token.at.into(),
