@@ -506,7 +506,7 @@ fn parse_for_loop(
     let variables_at = (variables_start, last.at.0 - variables_start + last.at.1);
 
     if let Err(error) = lexer.lex_in() {
-        if parser.template.content(last.at) != "in" {
+        if last.content(parser.template) != "in" {
             return Err(error.into());
         }
         let len = variable_names.len();
@@ -527,9 +527,9 @@ fn parse_for_loop(
     let reversed = lexer.lex_reversed()?;
     let variable_names = variable_names
         .iter()
-        .map(|token| parser.template.content(token.at).to_string())
+        .map(|token| token.content(parser.template).to_string())
         .collect();
-    let expression_content = parser.template.content(expression_token.at);
+    let expression_content = expression_token.content(parser.template);
     let expression = match expression_token.token_type {
         ForTokenType::Numeric => {
             return Err(ParseError::NotIterable {
