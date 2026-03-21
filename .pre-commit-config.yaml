@@ -6,6 +6,7 @@ default_install_hook_types:
 
 ci:
   autoupdate_schedule: monthly
+  skip: ["cargo-fmt"]
 
 # cf https://pre-commit.com/#regular-expressions
 exclude: |
