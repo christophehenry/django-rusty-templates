@@ -39,7 +39,6 @@ use dtl_lexer::common::{LexerError, get_all_at, text_content_at, translated_text
 use dtl_lexer::core::{Lexer, TokenType};
 use dtl_lexer::tag::autoescape::{AutoescapeEnabled, AutoescapeError, lex_autoescape_argument};
 use dtl_lexer::tag::common::{TagElementToken, TagElementTokenType};
-use dtl_lexer::tag::firstof::{FirstOfLexer, FirstOfToken};
 use dtl_lexer::tag::forloop::{ForLexer, ForLexerError, ForLexerInError, ForTokenType};
 use dtl_lexer::tag::ifcondition::{
     IfConditionAtom, IfConditionLexer, IfConditionOperator, IfConditionTokenType,
@@ -1503,40 +1502,52 @@ impl<'t, 'py> Parser<'t, 'py> {
     }
 
     fn parse_firstof(&mut self, parts: TagParts) -> Result<TokenTree, PyParseError> {
-        let lexer = FirstOfLexer::new(self.template, parts.clone());
-        let mut tokens = Vec::new();
+        // let lexer = FirstOfLexer::new(self.template, parts.clone());
+        // let mut tokens = Vec::new();
 
-        for token in lexer {
-            let token: FirstOfToken = token.map_err(ParseError::from)?;
-            let element_token = match token {
-                FirstOfToken::Element(element_token) => element_token,
-                FirstOfToken::AsVar(at) => TagElementToken {
-                    at,
-                    token_type: TagElementTokenType::Variable,
-                },
-            };
-            tokens.push(element_token);
+        let mut tokens = TagElementKwargLexer::new(self.template, parts.clone())
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(ParseError::from)?;
+
+        let mut asvar = None;
+        if tokens.len() >= 2 {
+            let as_at = tokens[tokens.len() - 2].at;
+            if self.template.content(as_at) == "as" {
+                asvar = extract_as_variable(&mut tokens, &self.template)?;
+            }
         }
 
-        if tokens.is_empty() {
+        // for token in lexer {
+        //     let token: FirstOfToken = token.map_err(ParseError::from)?;
+        //     let element_token = match token {
+        //         FirstOfToken::Element(element_token) => element_token,
+        //         FirstOfToken::AsVar(at) => TagElementToken {
+        //             at,
+        //             token_type: TagElementTokenType::Variable,
+        //         },
+        //     };
+        //     tokens.push(element_token);
+        // }
+
+        if tokens.is_empty() && asvar.is_none() {
             return Err(ParseError::MissingArgument {
                 at: parts.at.into(),
             }
             .into());
         }
 
-        let mut asvar = None;
-        if tokens.len() >= 2 {
-            let as_index = tokens.len() - 2;
-            let as_token = &tokens[as_index];
-            if as_token.token_type == TagElementTokenType::Variable
-                && self.template.content(as_token.content_at()) == "as"
-            {
-                let var_token = tokens.pop().expect("checked len");
-                tokens.pop();
-                asvar = Some(self.template.content(var_token.content_at()).to_string());
-            }
-        }
+        //let mut asvar = None;
+        // if tokens.len() >= 2 {
+        //     let as_index = tokens.len() - 2;
+        //     let as_token = &tokens[as_index];
+        //     if as_token.token_type == TagElementTokenType::Variable
+        //         && self.template.content(as_token.content_at()) == "as"
+        //     {
+        //         let var_token = tokens.pop().expect("checked len");
+        //         tokens.pop();
+        //         asvar = Some(self.template.content(var_token.content_at()).to_string());
+        //     }
+        // }
 
         let mut vars = Vec::with_capacity(tokens.len());
         for token in tokens {

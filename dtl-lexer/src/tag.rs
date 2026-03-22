@@ -1,6 +1,5 @@
 pub mod autoescape;
 pub mod common;
-pub mod firstof;
 pub mod forloop;
 pub mod ifcondition;
 pub mod include;
