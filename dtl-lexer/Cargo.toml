@@ -6,6 +6,6 @@ rust-version.workspace = true
 
 [dependencies]
 miette.workspace = true
-thiserror.workspace = true
 num-bigint.workspace = true
+thiserror.workspace = true
 unicode-xid =  "0.2.6"
